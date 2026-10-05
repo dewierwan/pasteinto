@@ -83,9 +83,11 @@
       case 'pre':
         return `\`\`\`${node.getAttribute('data-language') || ''}\n${node.textContent}\n\`\`\`\n\n`;
       case 'blockquote':
+        // A blank line inside the quote keeps its ">", or it ends the quote.
         return `${inner()
+          .replace(/\s+$/, '')
           .split('\n')
-          .map((line) => (line.trim() ? `> ${line}` : line))
+          .map((line) => (line.trim() ? `> ${line}` : '>'))
           .join('\n')}\n\n`;
       case 'ul':
       case 'ol': {

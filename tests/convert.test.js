@@ -31,6 +31,12 @@ describe('headings', () => {
   });
 });
 
+describe('quotes', () => {
+  it('keeps a quote of several paragraphs as one quote', () => {
+    expect(md('<blockquote><p>One</p><p>Two</p></blockquote>')).toBe('> One\n>\n> Two');
+  });
+});
+
 describe('inline formatting', () => {
   it('bold via <strong>', () => {
     expect(md('<p><strong>hi</strong></p>')).toBe('**hi**');
