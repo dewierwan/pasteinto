@@ -8,6 +8,7 @@ Each fixture is a paste, saved the way the browser received it.
 | `<name>.html` | The clipboard's HTML |
 | `<name>.txt` | The clipboard's plain text (detection uses it) |
 | `<name>.types` | The clipboard's types, one per line, when the app adds its own (Notion, Airtable) |
+| `<name>.slack.json` | Slack's own clipboard data, in place of `<name>.html`, for a copy from Slack's message box (which has no HTML) |
 | `<name>.detected.txt` | The detected source and how it is read |
 | `<name>.expected.md` | Markdown output |
 | `<name>.expected.email.html` | Email & Slack output |
@@ -36,6 +37,7 @@ Real captures are better than hand-written ones, because apps change their clipb
 | `pdf/` | Real viewer copies (see `tests/pdf.test.js`) |
 | `notion/page`, `gmail/compose` | Real captures, 03 Oct 2026: a Notion page in Chrome, and text typed into Gmail's compose box |
 | `gmail/reply` | Hand-built: a received email, with Gmail's `gmail_quote` markup |
+| `slack/draft` | Real capture, 05 Oct 2026: a draft in Slack's message box in Chrome. The user and channel IDs and one link are replaced with dummies |
 | `word/`, `vscode/`, `claude/` | Hand-built from each app's known clipboard format (October 2026), not yet real captures |
 
-Real captures have already corrected three wrong assumptions: Notion writes to-dos as `[x]` text, not checkboxes; Gmail's compose box adds no `gmail_` classes, so text copied from it is read as ordinary rich text; and Airtable adds no clipboard types of its own, so its pastes are read as ordinary rich text too (the shared Quill fix still turns its `<ul data-checked>` checklists into tasks).
+Real captures have already corrected four wrong assumptions: Notion writes to-dos as `[x]` text, not checkboxes; Gmail's compose box adds no `gmail_` classes, so text copied from it is read as ordinary rich text; Airtable adds no clipboard types of its own, so its pastes are read as ordinary rich text too (the shared Quill fix still turns its `<ul data-checked>` checklists into tasks); and Slack's message box copies no HTML at all, only plain text and its own `slack/texty` data.

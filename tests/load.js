@@ -12,6 +12,7 @@ const SCRIPTS = [
   'js/to-markdown.js',
   'js/to-text.js',
   'js/from-pdf.js',
+  'js/from-slack.js',
   'js/sources.js',
   'js/convert.js',
 ];

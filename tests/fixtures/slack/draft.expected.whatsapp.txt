@@ -1,0 +1,28 @@
+*Slack formatting test*
+Plain text with *bold*, _italic_, ~strikethrough~, `inline code`, *_bold italic_* and a link (https://pasteinto.com/).
+- Bullet one
+- Bullet two
+    - Nested bullet
+    - Nested with *bold*
+        - Third level
+- Bullet three
+1. Number one
+2. Number two
+    1. Nested number
+3. Number three
+
+> A quoted line
+> and a second quoted line
+
+```function hello() {
+  return "code block";
+}```
+Last line after a blank line.
+@Dewi
+#general
+:wave:
+link (https://example.com/page)
+
+word after a blank line
+
+sentence after two blank lines

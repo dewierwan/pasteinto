@@ -20,6 +20,8 @@
     { id: 'word', name: 'Word', matches: (clip) => /urn:schemas-microsoft-com:office|class="?Mso/i.test(clip.html), fix: fixWordLists },
     { id: 'gmail', name: 'Gmail', matches: (clip) => /class="?gmail_/.test(clip.html) },
     { id: 'airtable', name: 'Airtable', matches: (clip) => clip.types.some((t) => /airtable/i.test(t)) },
+    // Text copied from Slack's message box, read through js/from-slack.js.
+    { id: 'slack', name: 'Slack', matches: (clip) => clip.types.includes(SLACK_TYPE) },
   ];
 
   // Fixes for markup that many apps share, run on every rich paste.

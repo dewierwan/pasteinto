@@ -1,5 +1,6 @@
 // Saves a real paste as a test fixture: tests/fixtures/<folder>/<name>.html,
-// .txt and (if the app adds its own clipboard types) .types. Then run
+// .txt and (if the app adds its own clipboard types) .types. A copy from
+// Slack's message box has no HTML, so its Slack data is saved as .slack.json. Then run
 // `npm run test:update` and review the expected outputs it writes.
 // Usage:
 //   npm run capture                      opens a local page to paste into
@@ -28,6 +29,7 @@ const PAGE = `<!DOCTYPE html>
 <pre id="status">Waiting for a paste…</pre>
 <script src="/js/vendor/marked.umd.js"></script>
 <script src="/js/util.js"></script>
+<script src="/js/from-slack.js"></script>
 <script src="/js/sources.js"></script>
 <script src="/js/from-pdf.js"></script>
 <script src="/js/convert.js"></script>
@@ -38,11 +40,11 @@ document.addEventListener('paste', (event) => {
   if (event.target.tagName === 'INPUT') return;
   event.preventDefault();
   const data = event.clipboardData;
-  clip = { html: data.getData('text/html'), text: data.getData('text/plain'), types: Array.from(data.types) };
-  const detected = detect(clip);
+  clip = { html: data.getData('text/html'), text: data.getData('text/plain'), types: Array.from(data.types), slack: data.getData(SLACK_TYPE) };
+  const detected = detect({ ...clip, html: clip.html || slackToHtml(clip.slack) });
   if (!document.getElementById('folder').value) document.getElementById('folder').value = detected.source === 'html' ? '' : detected.source;
   document.getElementById('save').disabled = false;
-  status.textContent = 'Detected ' + detected.source + ' (read as ' + detected.read + ')\\nTypes: ' + clip.types.join(', ') + '\\n\\n' + clip.html.slice(0, 2000);
+  status.textContent = 'Detected ' + detected.source + ' (read as ' + detected.read + ')\\nTypes: ' + clip.types.join(', ') + '\\n\\n' + (clip.html || clip.slack).slice(0, 2000);
 });
 document.getElementById('save').addEventListener('click', async () => {
   const body = JSON.stringify({ ...clip, folder: document.getElementById('folder').value.trim(), name: document.getElementById('name').value.trim() });
@@ -54,19 +56,24 @@ document.getElementById('save').addEventListener('click', async () => {
 </html>`;
 
 function save(body) {
-  const { folder, name, html, text, types } = JSON.parse(body);
+  const { folder, name, html, text, types, slack } = JSON.parse(body);
   if (!SAFE_NAME.test(folder || '') || !SAFE_NAME.test(name || ''))
     return [400, 'Folder and name: lowercase letters, numbers, dots and dashes only.'];
-  if (!html) return [400, 'This paste has no HTML. Plain-text pastes are tested in tests/convert.test.js and tests/pdf.test.js.'];
+  if (!html && !slack) return [400, 'This paste has no HTML. Plain-text pastes are tested in tests/convert.test.js and tests/pdf.test.js.'];
   const dir = join(root, 'tests', 'fixtures', folder);
   const base = join(dir, name);
-  if (existsSync(`${base}.html`)) return [409, `tests/fixtures/${folder}/${name}.html already exists. Pick another name.`];
+  if (existsSync(`${base}.html`) || existsSync(`${base}.slack.json`))
+    return [409, `tests/fixtures/${folder}/${name} already exists. Pick another name.`];
   mkdirSync(dir, { recursive: true });
-  writeFileSync(`${base}.html`, html);
+  if (html) writeFileSync(`${base}.html`, html);
+  else writeFileSync(`${base}.slack.json`, `${JSON.stringify(JSON.parse(slack), null, 2)}\n`);
   writeFileSync(`${base}.txt`, text || '');
   const ownTypes = (types || []).filter((t) => !STANDARD_TYPES.has(t));
   if (ownTypes.length) writeFileSync(`${base}.types`, `${types.join('\n')}\n`);
-  return [200, `Saved tests/fixtures/${folder}/${name}.html. Next: npm run test:update, then review the expected files it writes.`];
+  return [
+    200,
+    `Saved tests/fixtures/${folder}/${name}.${html ? 'html' : 'slack.json'}. Next: npm run test:update, then review the expected files it writes.`,
+  ];
 }
 
 // The clipboard as a browser's paste event would see it, read with macOS's
@@ -80,15 +87,17 @@ function readMacClipboard() {
     JSON.stringify({ html: str('public.html'), text: str('public.utf8-plain-text'),
       custom: custom.isNil() ? '' : ObjC.unwrap(custom.base64EncodedStringWithOptions(0)) });`;
   const { html, text, custom } = JSON.parse(execFileSync('osascript', ['-l', 'JavaScript', '-e', script], { encoding: 'utf-8' }));
-  const types = [...(text ? ['text/plain'] : []), ...(html ? ['text/html'] : []), ...customTypes(Buffer.from(custom, 'base64'))];
-  return { html, text, types };
+  const customData = readCustomData(Buffer.from(custom, 'base64'));
+  const types = [...(text ? ['text/plain'] : []), ...(html ? ['text/html'] : []), ...Object.keys(customData)];
+  return { html, text, types, slack: customData['slack/texty'] || '' };
 }
 
 // Chromium pickle: uint32 payload size, uint32 count, then count pairs of
 // UTF-16 strings (uint32 length in characters, data padded to 4 bytes).
-function customTypes(buf) {
-  if (buf.length < 8) return [];
-  const types = [];
+// Returns { type: data }.
+function readCustomData(buf) {
+  if (buf.length < 8) return {};
+  const data = {};
   let at = 8;
   const readString = () => {
     const length = buf.readUInt32LE(at);
@@ -97,10 +106,10 @@ function customTypes(buf) {
     return value;
   };
   for (let i = buf.readUInt32LE(4); i > 0; i--) {
-    types.push(readString());
-    readString(); // the data
+    const type = readString();
+    data[type] = readString();
   }
-  return types;
+  return data;
 }
 
 const target = process.argv[2];

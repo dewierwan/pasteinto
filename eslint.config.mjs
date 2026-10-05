@@ -17,6 +17,8 @@ const siteGlobals = Object.fromEntries(
     'toText',
     'pdfToHtml',
     'looksLikePdf',
+    'SLACK_TYPE',
+    'slackToHtml',
     'APPS',
     'findApp',
     'fixHtml',

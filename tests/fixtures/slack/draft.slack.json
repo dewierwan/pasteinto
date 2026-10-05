@@ -1,0 +1,260 @@
+{
+  "ops": [
+    {
+      "attributes": {
+        "bold": true
+      },
+      "insert": "Slack formatting test"
+    },
+    {
+      "insert": "\nPlain text with "
+    },
+    {
+      "attributes": {
+        "bold": true
+      },
+      "insert": "bold"
+    },
+    {
+      "insert": ", "
+    },
+    {
+      "attributes": {
+        "italic": true
+      },
+      "insert": "italic"
+    },
+    {
+      "insert": ", "
+    },
+    {
+      "attributes": {
+        "strike": true
+      },
+      "insert": "strikethrough"
+    },
+    {
+      "insert": ", "
+    },
+    {
+      "attributes": {
+        "code": true
+      },
+      "insert": "inline code"
+    },
+    {
+      "insert": ", "
+    },
+    {
+      "attributes": {
+        "italic": true,
+        "bold": true
+      },
+      "insert": "bold italic"
+    },
+    {
+      "insert": " and a "
+    },
+    {
+      "attributes": {
+        "link": "https://pasteinto.com/"
+      },
+      "insert": "link"
+    },
+    {
+      "insert": ".\nBullet one"
+    },
+    {
+      "attributes": {
+        "list": "bullet"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Bullet two"
+    },
+    {
+      "attributes": {
+        "list": "bullet"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Nested bullet"
+    },
+    {
+      "attributes": {
+        "indent": 1,
+        "list": "bullet"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Nested with "
+    },
+    {
+      "attributes": {
+        "bold": true
+      },
+      "insert": "bold"
+    },
+    {
+      "attributes": {
+        "indent": 1,
+        "list": "bullet"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Third level"
+    },
+    {
+      "attributes": {
+        "indent": 2,
+        "list": "bullet"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Bullet three"
+    },
+    {
+      "attributes": {
+        "list": "bullet"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Number one"
+    },
+    {
+      "attributes": {
+        "list": "ordered"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Number two"
+    },
+    {
+      "attributes": {
+        "list": "ordered"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Nested number"
+    },
+    {
+      "attributes": {
+        "indent": 1,
+        "list": "ordered"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Number three"
+    },
+    {
+      "attributes": {
+        "list": "ordered"
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "A quoted line"
+    },
+    {
+      "attributes": {
+        "blockquote": true
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "and a second quoted line"
+    },
+    {
+      "attributes": {
+        "blockquote": true
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "function hello() {"
+    },
+    {
+      "attributes": {
+        "code-block": true
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "  return \"code block\";"
+    },
+    {
+      "attributes": {
+        "code-block": true
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "}"
+    },
+    {
+      "attributes": {
+        "code-block": true
+      },
+      "insert": "\n"
+    },
+    {
+      "insert": "Last line after a blank line.\n"
+    },
+    {
+      "attributes": {
+        "slackmention": {
+          "id": "U0000000001",
+          "label": "@Dewi",
+          "mention": true,
+          "unverified": false
+        }
+      },
+      "insert": "@Dewi"
+    },
+    {
+      "insert": " \n"
+    },
+    {
+      "attributes": {
+        "slackmention": {
+          "id": "C0000000001",
+          "label": "#general",
+          "mention": false,
+          "unverified": false
+        }
+      },
+      "insert": "#general"
+    },
+    {
+      "insert": " \n"
+    },
+    {
+      "insert": {
+        "slackemoji": {
+          "text": ":wave:"
+        }
+      }
+    },
+    {
+      "insert": " \n"
+    },
+    {
+      "attributes": {
+        "link": "https://example.com/page"
+      },
+      "insert": "link"
+    },
+    {
+      "insert": "\n\nword after a blank line\n\n\nsentence after two blank lines"
+    }
+  ]
+}

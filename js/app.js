@@ -9,7 +9,7 @@
     plain: { noun: 'plain text', hint: 'LinkedIn, X, text messages and forms' },
   };
   const STORAGE_KEY = 'paste-to.output';
-  const APP_SOURCES = ['gdocs', 'notion', 'word', 'gmail', 'airtable', 'pdf'];
+  const APP_SOURCES = ['gdocs', 'notion', 'word', 'gmail', 'airtable', 'slack', 'pdf'];
   // Anonymous usage counts from js/analytics.js; a no-op if it didn't load.
   const track = globalThis.track || (() => {});
 
@@ -68,7 +68,8 @@
   document.addEventListener('paste', (event) => {
     const data = event.clipboardData;
     if (!data) return;
-    const html = data.getData('text/html');
+    // Slack's message box copies its formatting only in its own type.
+    const html = data.getData('text/html') || slackToHtml(data.getData(SLACK_TYPE));
     const text = data.getData('text/plain');
     if (!html && !text) return;
     event.preventDefault();

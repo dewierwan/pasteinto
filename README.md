@@ -17,7 +17,7 @@ Every app puts its own clutter on the clipboard: Google Docs' span soup, Notion'
 ## Features
 
 - Paste anywhere on the page (on a phone, tap the card); the result is auto-copied. Switching output re-copies the same paste.
-- Detects the source (Google Docs, Notion, Word, Gmail, Airtable, PDF, Markdown, plain text) and lets you override how it's read.
+- Detects the source (Google Docs, Notion, Word, Gmail, Airtable, Slack, PDF, Markdown, plain text) and lets you override how it's read.
 - Headings, bold, italic, strikethrough, links, nested bullet and numbered lists, checkboxes, code, quotes and tables.
 - Repairs text copied from PDFs (a page or the whole document): rejoins the hard line breaks into paragraphs, removes line-break hyphens (keeping real ones like "evidence-based"), drops page numbers and the headers and footers repeated on every page, tidies contents pages and fixes ligatures, drop caps and Word bullets. Copies from Preview also keep headings (worked out from font sizes) and any bold Preview marks. Chrome's PDF viewer copies plain text only, so its copies come through without headings.
 - Fixes Google Docs quirks: the `<b style="font-weight:normal">` wrapper, formatting stored in inline styles, flattened nested lists, `google.com/url?q=` redirect links and "space after paragraph" spacing.
@@ -54,7 +54,7 @@ open pasteinto/index.html
 
 Every paste goes through the same three steps (`js/convert.js`):
 
-1. **Read** it into HTML. Rich text is used as is, Markdown is parsed with the vendored [marked](https://github.com/markedjs/marked), and `js/from-pdf.js` rebuilds paragraphs and lists from PDF text. `js/sources.js` lists the apps a paste can come from, how to recognise each, and rewrites each app's quirks (Word's list paragraphs, Quill's flat lists) into plain HTML.
+1. **Read** it into HTML. Rich text is used as is, Markdown is parsed with the vendored [marked](https://github.com/markedjs/marked), and `js/from-pdf.js` rebuilds paragraphs and lists from PDF text. `js/from-slack.js` reads text copied from Slack's message box, which puts no HTML on the clipboard, only Slack's own formatting data. `js/sources.js` lists the apps a paste can come from, how to recognise each, and rewrites each app's quirks (Word's list paragraphs, Quill's flat lists) into plain HTML.
 2. **Clean** it: `js/clean-html.js` reduces the HTML to a small, predictable subset. It knows nothing about any particular app.
 3. **Write** the output from that: `js/to-markdown.js` writes Markdown, `js/to-text.js` writes WhatsApp and plain text, and the cleaned HTML itself is the Email & Slack and Docs output.
 

@@ -53,6 +53,10 @@ declare function pdfToHtml(text: string, html?: string): string;
 declare function looksLikePdf(text: string): boolean;
 declare function keepHyphenForTest(left: string, right: string, text: string): boolean;
 
+// js/from-slack.js
+declare var SLACK_TYPE: string;
+declare function slackToHtml(json: string): string;
+
 // js/sources.js
 declare var APPS: App[];
 declare function findApp(clip: Clip): App | null;

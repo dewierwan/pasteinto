@@ -1,0 +1,27 @@
+Slack formatting test
+Plain text with bold, italic, strikethrough, inline code, bold italic and a link.
+Bullet one
+Bullet two
+Nested bullet
+Nested with bold
+Third level
+Bullet three
+Number one
+Number two
+Nested number
+Number three
+A quoted line
+and a second quoted line
+function hello() {
+  return "code block";
+}
+Last line after a blank line.
+@Dewi 
+#general 
+:wave: 
+link
+
+word after a blank line
+
+
+sentence after two blank lines

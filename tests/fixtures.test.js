@@ -2,6 +2,7 @@
 // result with its saved file next to the fixture:
 //   <name>.html (+ <name>.txt, <name>.types)  a rich-text paste
 //   <name>.txt  (+ <name>-clipboard.html)     a PDF paste (tests/fixtures/pdf)
+//   <name>.slack.json (+ .txt, .types)        a copy from Slack's message box
 //   <name>.detected.txt                       the detected source and how it is read
 //   <name>.expected.md / .email.html / .docs.html / .whatsapp.txt / .plain.txt
 // After an intended change, run `npm run test:update` and review the diff.
@@ -30,7 +31,15 @@ function cases() {
     for (const file of readdirSync(join(fixturesDir, folder)).sort()) {
       const base = join(fixturesDir, folder, file.replace(/\.(html|txt)$/, ''));
       if (/\.(expected|detected)\./.test(file)) continue;
-      if (folder === 'pdf' ? file.endsWith('.txt') : file.endsWith('.html')) {
+      if (file.endsWith('.slack.json')) {
+        const slackBase = join(fixturesDir, folder, file.replace(/\.slack\.json$/, ''));
+        const clip = {
+          slack: read(`${slackBase}.slack.json`),
+          text: read(`${slackBase}.txt`),
+          types: read(`${slackBase}.types`).split('\n').filter(Boolean),
+        };
+        found.push({ name: `${folder}/${file.replace(/\.slack\.json$/, '')}`, base: slackBase, clip });
+      } else if (folder === 'pdf' ? file.endsWith('.txt') : file.endsWith('.html')) {
         const clip =
           folder === 'pdf'
             ? { text: read(`${base}.txt`), html: read(base.replace(/\.(preview|chrome)$/, '.$1-clipboard') + '.html'), types: [] }
@@ -45,6 +54,8 @@ function cases() {
 describe.each(cases())('$name', ({ base, clip }) => {
   let detected;
   beforeAll(() => {
+    // As the page reads a paste: Slack's data stands in for missing HTML.
+    if (clip.slack !== undefined) clip = { html: w.slackToHtml(clip.slack), text: clip.text, types: clip.types };
     detected = w.detect(clip);
   });
 
