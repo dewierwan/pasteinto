@@ -33,9 +33,24 @@ To try it, open `chrome://extensions`, turn on Developer mode, choose Load unpac
 
 To release a new version:
 
-1. Bump `version` in `manifest.json`.
-2. Run `npm run pack:extension`. It writes the Chrome Web Store upload to `dist/`. The store rejects a version that isn't higher than the live one.
-3. Upload the zip to the Chrome Web Store.
+1. Check the version the Chrome Web Store shows as live. A rollback in the dashboard republishes an old package under a new, higher number, so the live version can be ahead of `manifest.json`.
+2. Pick the next version (see below) and set `version` in `manifest.json`.
+3. Run `npm run pack:extension`. It writes the Chrome Web Store upload to `dist/`.
+4. Upload the zip to the Chrome Web Store.
+
+### Version numbers
+
+Versions are `MAJOR.MINOR.PATCH`, following [Semantic Versioning](https://semver.org/). Paste Into has no API, so each part is judged by what someone using it notices:
+
+| Bump | When | Example |
+|---|---|---|
+| Patch, 1.1.0 → 1.1.1 | Something that should already have worked now works, or a small change people won't notice | Formatting kept when pasting from a Slack draft; a store description fix |
+| Minor, 1.1.1 → 1.2.0 | Something new to do or see | A new output, input type (PDF reading), button or setting |
+| Major, 1.2.0 → 2.0.0 | Something people rely on is removed or works differently, or the extension asks for a new permission | Dropping an output; a redesign; a permission that makes Chrome ask users again |
+
+When unsure between patch and minor, choose patch. A bump resets the parts to its right to 0 (1.1.3 → 1.2.0).
+
+Chrome's own rules ([manifest version](https://developer.chrome.com/docs/extensions/reference/manifest/version)): one to four whole numbers from 0 to 65535, no leading zeros, compared part by part as numbers, so 1.0.11 is higher than 1.0.4. The store rejects an upload whose version isn't higher than the live one, so a number can never be reused.
 
 ## Privacy
 

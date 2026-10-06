@@ -58,5 +58,5 @@ Every paste goes through three steps (`js/convert.js`):
 - `index.html` is also the extension popup (`manifest.json`). Keep it free of inline scripts, inline event handlers and remote code, which extensions refuse; a test checks this. Popup-only styles go under `html.is-extension`, set by `js/extension.js`.
 - `index.html` sets a Content-Security-Policy. A new remote connection (like Umami's `connect-src`) or image source needs adding there.
 - After changing any file in `css/` or `js/`, run `npm run stamp`. It updates the `?v=` content hashes in `index.html` so browsers don't mix new and cached files. A test fails if you forget.
-- To release: bump `version` in `manifest.json`, run `npm run pack:extension`, upload the zip to the Chrome Web Store, then push a tag `v<version>`. CI attaches the zip to a GitHub release.
+- To release: follow "To release a new version" in `README.md`, which also says how to pick the version number. Optionally push a tag `v<version>`; CI then attaches the zip to a GitHub release.
 - Pushing to `main` deploys the site through GitHub Pages.
