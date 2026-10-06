@@ -48,7 +48,7 @@ Versions are `MAJOR.MINOR.PATCH`, following [Semantic Versioning](https://semver
 | Minor, 1.1.1 → 1.2.0 | Something new to do or see | A new output, input type (PDF reading), button or setting |
 | Major, 1.2.0 → 2.0.0 | Something people rely on is removed or works differently, or the extension asks for a new permission | Dropping an output; a redesign; a permission that makes Chrome ask users again |
 
-When unsure between patch and minor, choose patch. A bump resets the parts to its right to 0 (1.1.3 → 1.2.0).
+When unsure between patch and minor, choose patch. Each part is a counter, not a decimal: it goes up by one and never skips, so 1.1.1 → 1.1.2, and 1.1.9 → 1.1.10. A bump resets the parts to its right to 0 (1.1.3 → 1.2.0).
 
 Chrome's own rules ([manifest version](https://developer.chrome.com/docs/extensions/reference/manifest/version)): one to four whole numbers from 0 to 65535, no leading zeros, compared part by part as numbers, so 1.0.11 is higher than 1.0.4. The store rejects an upload whose version isn't higher than the live one, so a number can never be reused.
 
