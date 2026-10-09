@@ -26,7 +26,10 @@
       // one paragraph per printed line, so the plain text decides. Preview's
       // HTML for a page that isn't prose (contents, cover, slides) gives itself
       // away too, and reads better as PDF text than as a paragraph per line.
-      if (isPdfText(clip.text) || isLineByLineHtml(html, clip.text)) return { source: 'pdf', read: 'pdf' };
+      // A real list or table never comes from a PDF viewer, which writes lines.
+      // Without this, Airtable bullets in lowercase with no full stops ("book
+      // the venue for the offsite") read as a PDF's wrapped lines.
+      if (!hasListOrTable(html) && (isPdfText(clip.text) || isLineByLineHtml(html, clip.text))) return { source: 'pdf', read: 'pdf' };
       // Code editors (VS Code, GitHub) put coloured but unformatted HTML on the
       // clipboard. If the HTML has no real formatting and the text is Markdown, use that.
       if (!hasFormatting(html) && looksLikeMarkdown(clip.text)) return { source: 'markdown', read: 'markdown' };
@@ -61,6 +64,10 @@
     const sizes = new Set(html.match(/font: [\d.]+px/g) || []);
     const leaders = lines.filter((l) => /[_.·…]{4,}\s*\d{0,4}$/.test(l)).length;
     return sizes.size > 1 || leaders >= MIN_LEADERS;
+  }
+
+  function hasListOrTable(html) {
+    return !!new DOMParser().parseFromString(html, 'text/html').querySelector('li, table');
   }
 
   function hasFormatting(html) {
