@@ -296,6 +296,8 @@
   function renderList(listEl, fmt, opts) {
     const items = [];
     collectListItems(listEl, 0, fmt, opts, items);
+    const depths = depthsOf(items);
+    items.forEach((item, i) => (item.level = depths[i]));
     if (opts.target !== 'rich') return listHtml(items, opts);
     // Email, Slack and the text outputs have no checklists, and a bullet before
     // the box ("• ☐ Book venue") reads as two markers. Tasks become lines that
@@ -312,6 +314,19 @@
     }
     // The list is spaced as one block, then its parts stand on their own.
     return opts.margins ? html : `<div data-p data-lines>${html}</div>`;
+  }
+
+  // Turns the levels the app wrote into nesting depths. A copy can start below
+  // the top level (two sub-bullets copied from Airtable are both ql-indent-1)
+  // or skip a level (0, then 2), and items at the same written level are
+  // siblings either way: [1, 1] becomes [0, 0] and [0, 2, 2] becomes [0, 1, 1].
+  function depthsOf(items) {
+    const open = []; // written levels of the lists that enclose the current item
+    return items.map((item) => {
+      while (open.length && open[open.length - 1] > item.level) open.pop();
+      if (!open.length || open[open.length - 1] < item.level) open.push(item.level);
+      return open.length - 1;
+    });
   }
 
   // Splits items into runs that share key(item).
@@ -345,8 +360,10 @@
       }
       return '';
     };
-    for (const item of items) {
-      const level = Math.min(item.level, stack.length);
+    // A run of ordinary items between tasks can start below the top level.
+    const depths = depthsOf(items);
+    items.forEach((item, i) => {
+      const level = depths[i];
       while (stack.length > level + 1) html += close();
       if (stack.length === level + 1 && stack[level].open !== item.open) html += close();
       if (stack.length === level + 1) {
@@ -359,7 +376,7 @@
       html += rich && level > 0 ? `<li class="ql-indent-${level}">` : '<li>';
       html += item.html;
       stack[stack.length - 1].liOpen = true;
-    }
+    });
     while (stack.length) html += close();
     return html;
   }

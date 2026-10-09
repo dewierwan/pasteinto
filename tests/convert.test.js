@@ -158,6 +158,19 @@ describe('lists', () => {
     expect(out).toContain('- [x] done');
     expect(out).toContain('- [ ] todo');
   });
+  // Items at the same written level are siblings, wherever the copy starts.
+  it.each([
+    ['a copy that starts on sub-bullets', [1, 1], '- a\n- b'],
+    ['a copy that starts two levels down', [2, 2, 1], '- a\n- b\n- c'],
+    ['a skipped level', [0, 2, 2], '- a\n  - b\n  - c'],
+    ['a deeper start, then the top level', [1, 2, 0], '- a\n  - b\n- c'],
+  ])('%s', (_, levels, expected) => {
+    const items = levels.map((level, i) => `<li class="ql-indent-${level}">${'abc'[i]}</li>`).join('');
+    const html = `<ul>${items}</ul>`;
+    expect(md(html)).toBe(expected);
+    const docs = convertClip({ html, text: '' }, 'rich', 'rich').html;
+    expect(docs.match(/<ul/g)).toHaveLength(expected.includes('  -') ? 2 : 1);
+  });
 });
 
 describe('links', () => {

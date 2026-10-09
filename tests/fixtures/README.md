@@ -37,6 +37,7 @@ Real captures are better than hand-written ones, because apps change their clipb
 | `pdf/` | Real viewer copies (see `tests/pdf.test.js`) |
 | `notion/page`, `gmail/compose` | Real captures, 03 Oct 2026: a Notion page in Chrome, and text typed into Gmail's compose box |
 | `gmail/reply` | Hand-built: a received email, with Gmail's `gmail_quote` markup |
+| `airtable/sub-bullets` | Real capture, 09 Oct 2026: two sub-bullets copied from Airtable without their parent bullet, so the copy starts at `ql-indent-1`. The text is replaced with dummies |
 | `slack/draft` | Real capture, 05 Oct 2026: a draft in Slack's message box in Chrome. The user and channel IDs and one link are replaced with dummies |
 | `word/`, `vscode/`, `claude/` | Hand-built from each app's known clipboard format (October 2026), not yet real captures |
 
