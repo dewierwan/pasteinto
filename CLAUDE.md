@@ -59,4 +59,4 @@ Every paste goes through three steps (`js/convert.js`):
 - `index.html` sets a Content-Security-Policy. A new remote connection (like Umami's `connect-src`) or image source needs adding there.
 - After changing any file in `css/` or `js/`, run `npm run stamp`. It updates the `?v=` content hashes in `index.html` so browsers don't mix new and cached files. A test fails if you forget.
 - To release: follow "To release a new version" in `README.md`, which also says how to pick the version number. Optionally push a tag `v<version>`; CI then attaches the zip to a GitHub release.
-- Pushing to `main` deploys the site through GitHub Pages.
+- Pushing to `main` runs CI (`.github/workflows/ci.yml`), which deploys the site to GitHub Pages only after every check passes. A failing test blocks the deploy.
