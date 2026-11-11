@@ -7,6 +7,15 @@ interface Clip {
   html?: string;
   text?: string;
   types?: string[];
+  /** Set when the paste is a PDF file: what the file says about its text. */
+  pdf?: PdfFormatting;
+}
+
+/** A PDF file's printed lines with their font sizes, and its bold and linked runs in reading order. */
+interface PdfFormatting {
+  lines: { text: string; size: number }[];
+  bold: string[];
+  links: { text: string; before: string; href: string }[];
 }
 
 type ReadAs = 'rich' | 'markdown' | 'text' | 'pdf';
@@ -17,7 +26,7 @@ interface App {
   id: string;
   name: string;
   spacing?: Spacing;
-  matches(clip: Required<Clip>): boolean;
+  matches(clip: Required<Pick<Clip, 'html' | 'text' | 'types'>>): boolean;
   fix?(doc: Document): void;
 }
 
@@ -49,9 +58,16 @@ declare function stripImages(markdown: string): string;
 declare function toText(html: string, style: 'whatsapp' | 'plain'): string;
 
 // js/from-pdf.js
-declare function pdfToHtml(text: string, html?: string): string;
+declare function pdfToHtml(text: string, html?: string, file?: PdfFormatting): string;
 declare function looksLikePdf(text: string): boolean;
 declare function keepHyphenForTest(left: string, right: string, text: string): boolean;
+declare function pdfListMarker(line: string): { type: string; length: number } | null;
+
+// js/from-pdf-file.js
+declare function isPdfFile(file: { type?: string; name?: string } | null | undefined): boolean;
+declare function readPdfFile(file: Blob): Promise<Clip>;
+declare function readPdfData(lib: any, data: Uint8Array): Promise<Clip>;
+declare function pdfPagesToClip(pages: { items: any[]; links: { href: string; rect: number[]; text?: string }[] }[]): Clip;
 
 // js/from-slack.js
 declare var SLACK_TYPE: string;

@@ -5,6 +5,8 @@
     "checkJs": true,
     "noEmit": true,
     "target": "es2022",
+    // js/from-pdf-file.js loads pdf.js with import() only when a PDF file arrives.
+    "module": "es2022",
     "lib": ["es2022", "dom", "dom.iterable"],
     "strict": false,
     "noImplicitThis": true,

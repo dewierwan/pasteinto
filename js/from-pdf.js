@@ -4,7 +4,8 @@
 // by hyphens, ligature characters and page numbers, and (in Preview and Chrome)
 // no blank lines between paragraphs. This rebuilds paragraphs and lists from
 // the plain text. Preview also puts HTML on the clipboard with each line's font
-// size (and sometimes bold), which gives back headings and bold.
+// size (and sometimes bold), which gives back headings and bold. A PDF file
+// read by js/from-pdf-file.js gives the same, and its links too.
 (function (root) {
   const LIGATURES = { ﬀ: 'ff', ﬁ: 'fi', ﬂ: 'fl', ﬃ: 'ffi', ﬄ: 'ffl', ﬅ: 'st', ﬆ: 'st' };
   // PDF viewers mark line-end hyphens in different ways: Chrome (PDFium) writes
@@ -42,9 +43,12 @@
   const COMPOUND_PREFIXES = new Set(['self', 'non', 'multi', 'well', 'mid', 'cross', 'half', 'semi', 'anti', 'ex', 'state', 'follow', 'long', 'short', 'high', 'low', 'full', 'part']);
 
   // html: the clipboard's HTML, if any; only Preview's (Cocoa HTML Writer) is used.
-  function pdfToHtml(text, html) {
+  // file: what a PDF file itself says about its text (js/from-pdf-file.js),
+  // used in place of the HTML.
+  /** @param {string} text @param {string} [html] @param {PdfFormatting} [file] */
+  function pdfToHtml(text, html, file) {
     const lines = normalise(text);
-    const format = readFormatting(html);
+    const format = file ? fileFormatting(file) : readFormatting(html);
     const width = typicalWidth(lines);
     const local = localWidths(lines, width);
     const words = wordCounts(lines);
@@ -98,7 +102,7 @@
         blocks.push(block);
       }
     }
-    return render(blocks, format.bold);
+    return render(blocks, format);
   }
 
   // Compares a text line with an HTML line despite ligatures and spacing.
@@ -111,11 +115,12 @@
   }
 
   // From Preview's HTML (one <p> per printed line, font sizes in a stylesheet):
-  // headings, as a map from line text to level 1–3, and the bold runs in order.
+  // headings, as a map from line text to level 1–3, and the bold runs in order
+  // (Preview copies no links).
   // Lines in a font clearly larger than the body text, short and worded like a
   // heading, are headings; the sizes rank into levels. Other HTML gives nothing.
   function readFormatting(html) {
-    const none = { headings: new Map(), bold: [] };
+    const none = { headings: new Map(), bold: [], links: [] };
     if (!html || !/Cocoa HTML Writer/.test(html)) return none;
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const sizes = {};
@@ -124,7 +129,6 @@
       if (size) sizes[`${tag}.${cls}`] = parseFloat(size[1]);
     }
     const lines = [];
-    const chars = new Map();
     for (const p of doc.querySelectorAll('p')) {
       const text = lineKey(p.textContent);
       if (!text) continue;
@@ -138,9 +142,38 @@
       }
       const size = [...bySize].sort((a, b) => b[1] - a[1])[0][0];
       lines.push({ text, size });
-      chars.set(size, (chars.get(size) || 0) + text.length);
     }
     if (!lines.length) return none;
+    const bold = Array.from(doc.querySelectorAll('b'), (b) => ({ text: boldKey(b.textContent) })).filter((run) => run.text.length > 1);
+    return { headings: rankHeadings(lines), bold, links: [] };
+  }
+
+  // The same from a PDF file: each printed line's font size, and the bold and
+  // linked runs in reading order.
+  /** @param {PdfFormatting} file */
+  function fileFormatting(file) {
+    const lines = file.lines.map((l) => ({ text: lineKey(l.text), size: l.size })).filter((l) => l.text);
+    const bold = file.bold.map((text) => ({ text: boldKey(text) })).filter((run) => run.text.length > 1);
+    const links = file.links
+      .map((link) => ({
+        text: lineKey(link.text),
+        before: (link.before || '').replace(/[ﬀﬁﬂﬃﬄﬅﬆ]/g, (c) => LIGATURES[c]),
+        href: link.href,
+      }))
+      .filter((run) => run.text);
+    return { headings: rankHeadings(lines), bold, links };
+  }
+
+  // A bold run as it will appear in the rebuilt text: a hyphen at a line's end goes when the lines join.
+  function boldKey(text) {
+    return lineKey(text).replace(new RegExp(`${HYPHEN}$`), '');
+  }
+
+  // lines: each printed line's text and font size. Returns the headings, as a
+  // map from line text to level 1–3.
+  function rankHeadings(lines) {
+    const chars = new Map();
+    for (const l of lines) chars.set(l.size, (chars.get(l.size) || 0) + l.text.length);
     const body = [...chars].sort((a, b) => b[1] - a[1])[0][0];
     const big = (l) =>
       l &&
@@ -160,10 +193,7 @@
     const levels = [...new Set(marked.map((l) => l.size))].sort((a, b) => b - a);
     const headings = new Map();
     for (const l of marked) headings.set(l.text, Math.min(levels.indexOf(l.size) + 1, 3));
-    const bold = Array.from(doc.querySelectorAll('b'), (b) => lineKey(b.textContent).replace(new RegExp(`${HYPHEN}$`), '')).filter(
-      (t) => t.length > 1,
-    );
-    return { headings, bold };
+    return headings;
   }
 
   function normalise(text) {
@@ -376,63 +406,121 @@
     return null;
   }
 
-  function render(blocks, bold = []) {
+  function render(blocks, format) {
     for (const block of blocks) block.lines = block.lines.map((l) => l.replace(TOC_END, ''));
-    markBold(blocks, bold);
-    const esc = (l) =>
-      escapeHtml(l)
-        .replace(/\u0001/g, '<b>')
-        .replace(/\u0002/g, '</b>');
+    const bold = locate(blocks, format.bold).map((at) => ({ ...at, open: '<b>', close: '</b>' }));
+    const links = joinLinks(blocks, locate(blocks, format.links)).map((at) => ({
+      ...at,
+      open: `<a href="${escapeAttr(at.run.href)}">`,
+      close: '</a>',
+    }));
+    // A block's lines as HTML. A heading is bold already, so it keeps only its links.
+    const marked = (block) => {
+      const runs = (block.type === 'h' ? links : [...bold, ...links]).filter((at) => at.block === block);
+      return block.lines.map((line, i) =>
+        markUp(
+          line,
+          runs.filter((at) => at.line === i),
+        ),
+      );
+    };
     let html = '';
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       if (block.type === 'h') {
-        html += `<h${block.level}>${esc(block.lines.join(' ').replace(/[\u0001\u0002]/g, ''))}</h${block.level}>`;
+        html += `<h${block.level}>${marked(block).join(' ')}</h${block.level}>`;
         continue;
       }
       if (block.type === 'p') {
-        html += `<p>${block.lines.map(esc).join('<br>')}</p>`;
+        html += `<p>${marked(block).join('<br>')}</p>`;
         continue;
       }
       // Group consecutive items of the same kind into one list. Numbered items
       // keep their own numbers as text, since lists in PDFs often skip or restart.
       const tag = block.type;
       let items = '';
-      while (i < blocks.length && blocks[i].type === tag) items += `<li>${esc(blocks[i++].lines.join(' '))}</li>`;
+      while (i < blocks.length && blocks[i].type === tag) items += `<li>${marked(blocks[i++]).join(' ')}</li>`;
       i--;
       html += tag === 'ul' ? `<ul>${items}</ul>` : items.replace(/<\/?li>/g, (t) => (t === '<li>' ? '<p>' : '</p>'));
     }
     return html;
   }
 
-  // Wraps each bold run (in document order) in \u0001…\u0002 where it next
-  // appears. A run not found in the next few blocks is skipped, so one mismatch
-  // can't stall the rest.
-  function markBold(blocks, bold) {
-    let run = 0;
-    for (let b = 0; b < blocks.length && run < bold.length; b++) {
-      const lines = blocks[b].lines;
-      let li = 0;
-      let from = 0;
-      while (run < bold.length && li < lines.length) {
-        const at = lines[li].indexOf(bold[run], from);
-        if (at >= 0) {
-          lines[li] = `${lines[li].slice(0, at)}\u0001${bold[run]}\u0002${lines[li].slice(at + bold[run].length)}`;
-          from = at + bold[run].length + 2;
-          run++;
-        } else if (li + 1 < lines.length) {
-          li++;
-          from = 0;
-        } else {
-          const ahead = blocks.slice(b + 1, b + 4).some((x) => x.lines.some((l) => l.includes(bold[run])));
-          if (!ahead) {
-            run++;
-            li = 0;
-            from = 0;
-          } else break;
+  // Finds each run (bold or linked text, in document order) where it next
+  // appears in the rebuilt blocks. A run that isn't there (its line was dropped
+  // as a page header, or joined differently) is skipped. So is one whose only
+  // match lies beyond the next run's: that match is some later use of the same
+  // words, and taking it would leave every run in between unplaced.
+  function locate(blocks, runs) {
+    const found = [];
+    let from = { block: 0, line: 0, at: 0 };
+    const next = (run) => {
+      for (let b = from.block; b < blocks.length; b++) {
+        const lines = blocks[b].lines;
+        for (let li = b === from.block ? from.line : 0; li < lines.length; li++) {
+          const at = indexOfRun(lines[li], run, b === from.block && li === from.line ? from.at : 0);
+          if (at >= 0) return { block: b, line: li, at };
         }
       }
+      return null;
+    };
+    const isBefore = (a, b) => a.block - b.block || a.line - b.line || a.at - b.at;
+    runs.forEach((run, i) => {
+      const here = next(run);
+      const after = here && i + 1 < runs.length && next(runs[i + 1]);
+      if (!here || (after && isBefore(after, here) < 0)) return;
+      from = { ...here, at: here.at + run.text.length };
+      found.push({ block: blocks[here.block], line: here.line, start: here.at, end: from.at, run });
+    });
+    return found;
+  }
+
+  // A link knows the words before it on its printed line, which tells "the
+  // result" from an earlier "result". They are missing when the link started a
+  // line that has since joined the one above.
+  function indexOfRun(line, run, from) {
+    if (run.before) {
+      const at = line.indexOf(run.before + run.text, Math.max(0, from - run.before.length));
+      if (at >= 0) return at + run.before.length;
     }
+    return line.indexOf(run.text, from);
+  }
+
+  // A link that wraps onto a second line is two links in the file ("Role" /
+  // "Confusion"). Once the lines join, they are one link again.
+  function joinLinks(blocks, found) {
+    const joined = [];
+    for (const at of found) {
+      const last = joined[joined.length - 1];
+      const same = last && last.block === at.block && last.line === at.line && last.run.href === at.run.href && last.end <= at.start;
+      if (same && !at.block.lines[at.line].slice(last.end, at.start).trim()) last.end = at.end;
+      else joined.push({ ...at });
+    }
+    return joined;
+  }
+
+  // Wraps each run's stretch of the line in its tags. Runs can overlap (a link
+  // inside bold text, or half in it), so a tag that would cross another closes
+  // and opens again around it.
+  function markUp(line, runs) {
+    runs = runs.filter((r) => r.end > r.start).sort((a, b) => a.start - b.start || b.end - a.end);
+    const cuts = [...new Set([0, line.length, ...runs.flatMap((r) => [r.start, r.end])])].sort((a, b) => a - b);
+    const open = [];
+    let html = '';
+    cuts.forEach((cut, i) => {
+      const reopen = [];
+      while (open.some((r) => r.end === cut)) {
+        const top = open.pop();
+        html += top.close;
+        if (top.end !== cut) reopen.unshift(top);
+      }
+      for (const r of [...reopen, ...runs.filter((r) => r.start === cut)]) {
+        html += r.open;
+        open.push(r);
+      }
+      if (i + 1 < cuts.length) html += escapeHtml(line.slice(cut, cuts[i + 1]));
+    });
+    return html;
   }
 
   // A paste looks like PDF text when it is plain text only and several long
@@ -461,5 +549,6 @@
 
   root.pdfToHtml = pdfToHtml;
   root.looksLikePdf = looksLikePdf;
+  root.pdfListMarker = listMarker;
   root.keepHyphenForTest = (l, r, text) => keepHyphen(l, r, wordCounts(normalise(text)));
 })(globalThis);

@@ -10,6 +10,8 @@ import { fileURLToPath } from 'url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFileSync(resolve(root, path), 'utf-8');
 
+const PDFJS_FILES = ['js/vendor/pdfjs/pdf.min.mjs', 'js/vendor/pdfjs/pdf.worker.min.mjs', 'js/vendor/pdfjs/LICENSE'];
+
 export function extensionFiles() {
   const manifest = JSON.parse(read('manifest.json'));
   const files = new Set(['manifest.json', manifest.action.default_popup, 'LICENSE', 'fonts/LICENSE.md']);
@@ -17,6 +19,8 @@ export function extensionFiles() {
   Object.values(manifest.action.default_icon).forEach((path) => files.add(path));
   // Local href/src references in the page, without the ?v= stamp.
   for (const [, path] of read('index.html').matchAll(/(?:href|src)="(?!https?:|#)([^"?]+)/g)) files.add(path);
+  // pdf.js, which js/from-pdf-file.js loads only when a PDF file arrives.
+  for (const path of PDFJS_FILES) files.add(path);
   // url() references in the stylesheet, relative to css/.
   for (const [, path] of read('css/app.css').matchAll(/url\('?\.\.\/([^')]+)'?\)/g)) files.add(path);
   return [...files].sort();

@@ -12,6 +12,8 @@ it('packs every file the extension popup needs', () => {
   expect(files).toEqual(
     expect.arrayContaining(['manifest.json', 'index.html', 'css/app.css', 'js/app.js', 'fonts/InterVariable.woff2', 'icons/icon-128.png']),
   );
+  // pdf.js is loaded by js/from-pdf-file.js, not by a tag in index.html.
+  expect(files).toEqual(expect.arrayContaining(['js/vendor/pdfjs/pdf.min.mjs', 'js/vendor/pdfjs/pdf.worker.min.mjs']));
   expect(files.filter((path) => !existsSync(resolve(root, path)))).toEqual([]);
   expect(files.some((path) => path.startsWith('tests/') || path.startsWith('node_modules/'))).toBe(false);
 });

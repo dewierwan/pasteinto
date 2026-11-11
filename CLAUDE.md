@@ -23,9 +23,11 @@ CI runs format check, lint, type check, spelling, HTML validation and tests on e
 
 Every paste goes through three steps (`js/convert.js`):
 
-1. **Read** into HTML. Rich text is used as is, Markdown goes through `js/vendor/marked.umd.js`, PDF text goes through `js/from-pdf.js`, and Slack's message box (which copies no HTML) goes through `js/from-slack.js`. `js/sources.js` lists the apps (detection rule, name, paragraph spacing) and rewrites each app's quirks into plain HTML.
+1. **Read** into HTML. Rich text is used as is, Markdown goes through `js/vendor/marked.umd.js`, PDF text goes through `js/from-pdf.js`, a PDF file (pasted or dropped) is first read by `js/from-pdf-file.js` into such a paste plus its links, bold and font sizes, and Slack's message box (which copies no HTML) goes through `js/from-slack.js`. `js/sources.js` lists the apps (detection rule, name, paragraph spacing) and rewrites each app's quirks into plain HTML.
 2. **Clean** with `js/clean-html.js` into a small, predictable subset. The cleaner knows nothing about specific apps.
 3. **Write** the output. `js/to-markdown.js` writes Markdown and `js/to-text.js` writes WhatsApp and plain text. Email & Slack and Docs use the cleaned HTML itself.
+
+PDF viewers copy no links, so a link can only come from the file. `js/from-pdf-file.js` loads pdf.js (`js/vendor/pdfjs/`, about 1.9 MB) with `import()` the first time a PDF file arrives, never at page load. Browsers refuse `import()` on a page opened as a local file, so to try a PDF file serve the folder (`python3 -m http.server`).
 
 `js/app.js` wires up the page, `js/analytics.js` sends anonymous counts and `js/extension.js` adjusts the page when it runs as the extension popup.
 
@@ -44,7 +46,7 @@ Every paste goes through three steps (`js/convert.js`):
 - Comments explain why, in plain English, with a real example where it helps ("Gmail writes `<div>Hi Sam,<div><br></div>…`").
 - Give thresholds a named constant with a one-line reason.
 - Parse pasted HTML only with `DOMParser`, never `innerHTML` on an element of the live page: browsers run event handlers in it. A test checks this.
-- Third-party code lives unmodified in `js/vendor/` (currently marked, MIT).
+- Third-party code lives unmodified in `js/vendor/` (marked, MIT; pdf.js, Apache 2.0). To update pdf.js, copy `legacy/build/pdf.min.mjs`, `legacy/build/pdf.worker.min.mjs` and `LICENSE` from the `pdfjs-dist` npm package and set `PDFJS_VERSION` in `js/from-pdf-file.js`. The tests need Node 22, because pdf.js does.
 
 ## Tests
 

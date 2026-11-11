@@ -17,6 +17,9 @@ const siteGlobals = Object.fromEntries(
     'toText',
     'pdfToHtml',
     'looksLikePdf',
+    'pdfListMarker',
+    'isPdfFile',
+    'readPdfFile',
     'SLACK_TYPE',
     'slackToHtml',
     'APPS',
@@ -51,6 +54,4 @@ export default [
     files: ['tests/destinations/live/*.js'],
     languageOptions: { sourceType: 'script', globals: globals.browser },
   },
-  // The PDF reader marks bold runs with \u0001 and \u0002 while it works.
-  { files: ['js/from-pdf.js'], rules: { 'no-control-regex': 'off' } },
 ];

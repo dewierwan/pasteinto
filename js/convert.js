@@ -1,7 +1,8 @@
 // Detects where a paste came from and converts it to the chosen output.
 // Every paste goes through the same three steps:
 //   1. read it into HTML (rich text as is, Markdown with marked, PDF text with
-//      js/from-pdf.js) and rewrite its app's quirks (js/sources.js);
+//      js/from-pdf.js) and rewrite its app's quirks (js/sources.js). A PDF file
+//      is first read into such a paste by js/from-pdf-file.js;
 //   2. clean that HTML into a small, predictable subset (js/clean-html.js);
 //   3. write the output from it (js/to-markdown.js, js/to-text.js, or the
 //      cleaned HTML itself for Email & Slack and Docs).
@@ -18,6 +19,8 @@
   // clip: { html, text, types } from the paste event's clipboardData.
   /** @param {Clip} clip @returns {{ source: string, read: ReadAs }} */
   function detect(clip) {
+    // A PDF file, already read by js/from-pdf-file.js.
+    if (clip.pdf) return { source: 'pdf', read: 'pdf' };
     const html = clip.html || '';
     if (html) {
       const app = findApp(clip);
@@ -136,7 +139,7 @@
   function readHtml(clip, readAs) {
     // breaks: a single newline is a line break ("Thanks,⏎Dewi"), as in chat apps.
     if (readAs === 'markdown') return { html: marked.parse(clip.text || '', { gfm: true, breaks: true }), spacing: 'tags' };
-    if (readAs === 'pdf') return { html: pdfToHtml(clip.text, clip.html), spacing: 'tags' };
+    if (readAs === 'pdf') return { html: pdfToHtml(clip.text, clip.html, clip.pdf), spacing: 'tags' };
     if (readAs !== 'rich' || !clip.html) return { html: textToHtml(clip.text), spacing: 'tags' };
     const app = findApp(clip);
     return { html: fixHtml(clip.html, app), spacing: (app && app.spacing) || 'tags' };

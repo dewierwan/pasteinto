@@ -20,6 +20,7 @@ Every app puts its own clutter on the clipboard: Google Docs' span soup, Notion'
 - Detects the source (Google Docs, Notion, Word, Gmail, Airtable, Slack, PDF, Markdown, plain text) and lets you override how it's read.
 - Headings, bold, italic, strikethrough, links, nested bullet and numbered lists, checkboxes, code, quotes and tables.
 - Repairs text copied from PDFs (a page or the whole document): rejoins the hard line breaks into paragraphs, removes line-break hyphens (keeping real ones like "evidence-based"), drops page numbers and the headers and footers repeated on every page, tidies contents pages and fixes ligatures, drop caps and Word bullets. Copies from Preview also keep headings (worked out from font sizes) and any bold Preview marks. Chrome's PDF viewer copies plain text only, so its copies come through without headings.
+- Reads a PDF file too: copy the file in Finder and paste it, or drop it on the page. No PDF viewer copies links, so this is the way to keep them. Headings, bold and bullets come from the file as well.
 - Fixes Google Docs quirks: the `<b style="font-weight:normal">` wrapper, formatting stored in inline styles, flattened nested lists, `google.com/url?q=` redirect links and "space after paragraph" spacing.
 - No build step. Static HTML, CSS and JavaScript.
 
@@ -56,7 +57,7 @@ Chrome's own rules ([manifest version](https://developer.chrome.com/docs/extensi
 
 100% client-side. Nothing you paste leaves your browser.
 
-On pasteinto.com and in the Chrome extension, `js/analytics.js` sends anonymous usage counts to [Umami Cloud](https://umami.is/) with no cookies: pageviews, plus events naming the detected source app, the output format and how you pasted (keyboard, tap or long-press). The Chrome extension sends the same counts, reported as the page `/extension`. It never sends pasted content.
+On pasteinto.com and in the Chrome extension, `js/analytics.js` sends anonymous usage counts to [Umami Cloud](https://umami.is/) with no cookies: pageviews, plus events naming the detected source app, the output format and how you pasted (keyboard, tap, long-press or a dropped file). The Chrome extension sends the same counts, reported as the page `/extension`. It never sends pasted content.
 
 ## Run locally
 
@@ -69,7 +70,7 @@ open pasteinto/index.html
 
 Every paste goes through the same three steps (`js/convert.js`):
 
-1. **Read** it into HTML. Rich text is used as is, Markdown is parsed with the vendored [marked](https://github.com/markedjs/marked), and `js/from-pdf.js` rebuilds paragraphs and lists from PDF text. `js/from-slack.js` reads text copied from Slack's message box, which puts no HTML on the clipboard, only Slack's own formatting data. `js/sources.js` lists the apps a paste can come from, how to recognise each, and rewrites each app's quirks (Word's list paragraphs, Quill's flat lists) into plain HTML.
+1. **Read** it into HTML. Rich text is used as is, Markdown is parsed with the vendored [marked](https://github.com/markedjs/marked), and `js/from-pdf.js` rebuilds paragraphs and lists from PDF text. A PDF file is read by `js/from-pdf-file.js` with the vendored [pdf.js](https://github.com/mozilla/pdf.js), loaded only when a file arrives, which adds the file's links, bold and font sizes. `js/from-slack.js` reads text copied from Slack's message box, which puts no HTML on the clipboard, only Slack's own formatting data. `js/sources.js` lists the apps a paste can come from, how to recognise each, and rewrites each app's quirks (Word's list paragraphs, Quill's flat lists) into plain HTML.
 2. **Clean** it: `js/clean-html.js` reduces the HTML to a small, predictable subset. It knows nothing about any particular app.
 3. **Write** the output from that: `js/to-markdown.js` writes Markdown, `js/to-text.js` writes WhatsApp and plain text, and the cleaned HTML itself is the Email & Slack and Docs output.
 
@@ -100,7 +101,7 @@ The page title lists features, but people search for the problem, especially pas
 
 ## Contributing
 
-Real-world fixtures are the most useful contribution. Copy something in the app, run `npm run capture -- <folder>/<name>`, then run `npm run test:update` and check the expected outputs it writes. [`tests/fixtures/README.md`](tests/fixtures/README.md) has the details. For PDFs, add the copied text to `tests/fixtures/pdf/` (and the clipboard HTML, if the viewer wrote any) with a test in `tests/pdf.test.js`.
+Real-world fixtures are the most useful contribution. Copy something in the app, run `npm run capture -- <folder>/<name>`, then run `npm run test:update` and check the expected outputs it writes. [`tests/fixtures/README.md`](tests/fixtures/README.md) has the details. For PDFs, add the copied text to `tests/fixtures/pdf/` (and the clipboard HTML, if the viewer wrote any) with a test in `tests/pdf.test.js`. A PDF file that reads badly goes there too, with a test in `tests/pdf-file.test.js`.
 
 ```sh
 npm install
@@ -111,4 +112,4 @@ npm run lint:html
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). The vendored pdf.js in `js/vendor/pdfjs/` is Apache 2.0 (its `LICENSE` sits beside it).

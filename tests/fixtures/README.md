@@ -16,7 +16,7 @@ Each fixture is a paste, saved the way the browser received it.
 | `<name>.expected.whatsapp.txt` | WhatsApp output |
 | `<name>.expected.plain.txt` | Plain text output |
 
-PDF fixtures in `pdf/` are plain text instead: `<name>.txt`, plus `<name>-clipboard.html` when the viewer also wrote HTML. `tests/pdf.test.js` checks them in more detail.
+PDF fixtures in `pdf/` are plain text instead: `<name>.txt`, plus `<name>-clipboard.html` when the viewer also wrote HTML. `tests/pdf.test.js` checks them in more detail. `pdf/links.pdf` is a PDF file, read the way a pasted or dropped file is (`tests/pdf-file.test.js`); it is `pdf/links.source.html` printed to PDF by Chrome.
 
 ## Adding a fixture
 

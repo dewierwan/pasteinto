@@ -152,6 +152,14 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* A PDF file is being dragged over the window (js/app.js): the card says it
+   will take it. */
+html.is-dropping .card {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-card), 0 0 0 3px var(--accent-ring);
+}
+html.is-dropping .output-content:empty::before { color: var(--accent); }
+
 /* Output pane — iA Writer Mono, the writing surface */
 .output-content {
   flex: 1;
