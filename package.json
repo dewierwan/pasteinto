@@ -14,6 +14,7 @@
     "lint:html": "html-validate index.html",
     "stamp": "node scripts/stamp.mjs",
     "pack:extension": "node scripts/pack-extension.mjs",
+    "publish:extension": "node scripts/publish-extension.mjs",
     "capture": "node scripts/capture-fixture.mjs",
     "destinations:payloads": "node scripts/destination-payloads.mjs"
   },

@@ -60,5 +60,5 @@ PDF viewers copy no links, so a link can only come from the file. `js/from-pdf-f
 - `index.html` is also the extension popup (`manifest.json`). Keep it free of inline scripts, inline event handlers and remote code, which extensions refuse; a test checks this. Popup-only styles go under `html.is-extension`, set by `js/extension.js`.
 - `index.html` sets a Content-Security-Policy. A new remote connection (like Umami's `connect-src`) or image source needs adding there.
 - After changing any file in `css/` or `js/`, run `npm run stamp`. It updates the `?v=` content hashes in `index.html` so browsers don't mix new and cached files. A test fails if you forget.
-- To release: follow "To release a new version" in `README.md`, which also says how to pick the version number. Optionally push a tag `v<version>`; CI then attaches the zip to a GitHub release.
+- To release: set `version` in `manifest.json` and push to `main`. CI uploads the extension to the Chrome Web Store and submits it for review (`scripts/publish-extension.mjs`), once the secrets in `README.md` "One-time setup" exist. `README.md` also says how to pick the version number.
 - Pushing to `main` runs CI (`.github/workflows/ci.yml`), which deploys the site to GitHub Pages only after every check passes. A failing test blocks the deploy.

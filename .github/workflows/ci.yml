@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Lets a release be retried by hand: gh workflow run CI
+  workflow_dispatch:
 
 jobs:
   test:
@@ -45,3 +47,22 @@ jobs:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Sends a new extension version to the Chrome Web Store for review. The
+  # script does nothing unless manifest.json has a version the store has not
+  # seen, so a release is: bump "version", push. It also does nothing until
+  # the two secrets exist (README.md, "One-time setup").
+  extension:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/pack-extension.mjs
+      - run: node scripts/publish-extension.mjs
+        env:
+          CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}

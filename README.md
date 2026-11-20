@@ -34,10 +34,27 @@ To try it, open `chrome://extensions`, turn on Developer mode, choose Load unpac
 
 To release a new version:
 
-1. Check the version the Chrome Web Store shows as live. A rollback in the dashboard republishes an old package under a new, higher number, so the live version can be ahead of `manifest.json`.
-2. Pick the next version (see below) and set `version` in `manifest.json`.
-3. Run `npm run pack:extension`. It writes the Chrome Web Store upload to `dist/`.
-4. Upload the zip to the Chrome Web Store.
+1. Pick the next version (see below) and set `version` in `manifest.json`.
+2. Push to `main`.
+
+CI then packs the extension, uploads it to the Chrome Web Store and submits it for review (`scripts/publish-extension.mjs`). It goes live when Google approves it. CI does this only when `manifest.json` has a version the store has not seen, so an ordinary push changes nothing. If the store is ahead of `manifest.json`, the run says so: a rollback in the dashboard republishes an old package under a new, higher number. To retry a release, run `gh workflow run CI`.
+
+Changes to the store listing, screenshots or privacy answers still go through the [Developer Dashboard](https://chrome.google.com/webstore/devconsole/).
+
+#### One-time setup
+
+CI needs a Google service account that the Chrome Web Store trusts. Until both secrets below exist, the release step is skipped and the zip has to be uploaded by hand (`npm run pack:extension`, then the dashboard's Package tab).
+
+1. In the [Google Cloud Console](https://console.developers.google.com), create or pick a project, search for "Chrome Web Store API" and enable it.
+2. Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts) in that project. It needs no roles. Create a JSON key for it.
+3. In the Developer Dashboard, signed in as the publisher, add the service account's email in the Account section. A publisher can have one service account.
+4. Copy the publisher ID from the dashboard's Publisher settings.
+5. Save both as repository secrets, then delete the key file:
+
+   ```sh
+   gh secret set CWS_SERVICE_ACCOUNT_KEY < key.json
+   gh secret set CWS_PUBLISHER_ID --body "<publisher ID>"
+   ```
 
 ### Version numbers
 
