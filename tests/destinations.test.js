@@ -121,6 +121,20 @@ describe('Airtable and Slack (their Quill 1 clipboard, run here)', () => {
   }
 });
 
+// Slack's message box tests a paste's plain text for Markdown before it looks
+// at the HTML, and on a match converts the text and drops the HTML. These are
+// the line-start tests from hasAnyMarkdown in Slack's desktop app (19 Nov 2026).
+// It also tests for Markdown inside a line (`code`, **bold**, [text](url)),
+// which our text only has when the source had those characters typed out.
+const SLACK_MARKDOWN_LINES = {
+  'numbered list': /^1\. [^\s]/m,
+  bullet: /^[-*] [^\s]/m,
+  quote: /^> [^\s]/m,
+  heading: /^#{1,6}\s+?\S/m,
+  rule: /^---\s*$/m,
+  'code fence': /^`{3,}\S+\s*$/m,
+};
+
 // Rules learned from pasting into Notion, Google Docs and Gmail (verified.json
 // has the evidence). Checked on every source's output.
 describe('rules for Notion, Google Docs, Gmail and Slack', () => {
@@ -175,6 +189,14 @@ describe('rules for Notion, Google Docs, Gmail and Slack', () => {
       it('Email & Slack: tasks are lines, not list items (Slack ignores list-style-type)', () => {
         for (const li of emailDoc.querySelectorAll('li')) expect(li.textContent.trim()).not.toMatch(/^[☐☒]/);
         expect(emailDoc.querySelectorAll('input').length).toBe(0);
+      });
+
+      it('the text beside the HTML has no line Slack reads as Markdown (Slack would then ignore the HTML)', () => {
+        for (const output of [docs, email]) {
+          for (const [rule, pattern] of Object.entries(SLACK_MARKDOWN_LINES)) {
+            expect(output['text/plain'], `Slack rule: ${rule}`).not.toMatch(pattern);
+          }
+        }
       });
 
       it('no ☑ anywhere: Gmail swaps it for a coloured emoji', () => {

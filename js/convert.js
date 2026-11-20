@@ -127,10 +127,26 @@
     // Email markup (headings as bold lines) also feeds the text writers.
     const email = cleanHtml(html, { target: 'rich', headings: 'bold', spacing });
     const plain = toText(email, 'plain');
-    if (output === 'email') return { html: email, text: plain };
+    // The text copied beside the HTML must not look like Markdown to Slack.
+    const beside = hideMarkdownLineStarts(plain);
+    if (output === 'email') return { html: email, text: beside };
     // Docs keeps real checkboxes: Notion turns them into to-dos.
-    if (output === 'rich') return { html: cleanHtml(html, { target: 'rich', headings: 'keep', tasks: 'inputs', spacing }), text: plain };
+    if (output === 'rich') return { html: cleanHtml(html, { target: 'rich', headings: 'keep', tasks: 'inputs', spacing }), text: beside };
     return { text: output === 'plain' ? plain : toText(email, output) };
+  }
+
+  // Slack's message box reads a paste's plain text before its HTML. If a line
+  // starts the way Markdown does ("1. First", "> Ship small."), Slack converts
+  // that text itself and ignores the HTML, so bold, links and nested bullets
+  // are lost ("    • One A" joins the item above it). A space before such a
+  // line makes Slack use the HTML. These are the line starts Slack tests for
+  // (its hasAnyMarkdown, read from the desktop app on 19 Nov 2026); every
+  // numbered line gets the space, so a list still lines up.
+  // Markdown typed inside a line (`code`, **bold**, [text](url)) still sets
+  // Slack off. Our text has none unless the source had those characters.
+  const MARKDOWN_LINE_START = /^(?=(?:\d+\.|[-*>]) \S|#{1,6}\s+\S|---\s*$|```\S)/gm;
+  function hideMarkdownLineStarts(text) {
+    return text.replace(MARKDOWN_LINE_START, ' ');
   }
 
   // Step 1: the paste as HTML, with its app's quirks rewritten, and how that

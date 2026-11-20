@@ -390,6 +390,12 @@
         const listType = child.getAttribute('data-list-type');
         const tag = listType === 'ul' || listType === 'ol' ? listType : listEl.tagName.toLowerCase();
         const type = tag === 'ol' && OL_TYPES[child.style.listStyleType];
+        // A list that carries on from an earlier one ("14." after a heading)
+        // keeps its first number. Gmail and Google Docs number from it. Slack's
+        // lists always start at 1, so on seeing it Slack types every number in
+        // the paste as text ("14. Tim Hua") and keeps the nested bullets.
+        const first = tag === 'ol' && listEl.tagName === 'OL' ? parseInt(listEl.getAttribute('start'), 10) : NaN;
+        const start = Number.isInteger(first) && first !== 1 ? ` start="${first}"` : '';
         const isList = (node) => node.nodeType === 1 && (node.tagName === 'UL' || node.tagName === 'OL');
         const nested = Array.from(child.childNodes).filter(isList);
         const content = Array.from(child.childNodes).filter((node) => !isList(node));
@@ -406,7 +412,7 @@
         const checked = taskList && box.checked ? 'true' : 'false';
         const open = taskList
           ? `<ul data-checked="${checked}"${DOCS_TASK_LIST_STYLE}>`
-          : `<${tag}${type ? ` type="${type}"` : ''}${style}>`;
+          : `<${tag}${start}${type ? ` type="${type}"` : ''}${style}>`;
         items.push({
           level: ariaLevel > 0 ? ariaLevel - 1 : depth,
           task,

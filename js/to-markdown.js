@@ -92,7 +92,7 @@
       case 'ul':
       case 'ol': {
         let out = tag === 'ol' ? '\n' : '';
-        let n = 1;
+        let n = parseInt(node.getAttribute('start'), 10) || 1;
         for (const li of node.children) if (li.tagName === 'LI') out += convertListItem(li, indent, tag === 'ol' ? n++ : null);
         return `${out}\n`; // a blank line after the list
       }

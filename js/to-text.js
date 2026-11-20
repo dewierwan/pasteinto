@@ -51,7 +51,7 @@
 
   function list(listEl, ctx, depth) {
     let out = '';
-    let n = 1;
+    let n = parseInt(listEl.getAttribute('start'), 10) || 1;
     for (const li of listEl.children) {
       // cleanHtml puts a nested list beside its parent item: <ul><li>One</li><ul>…
       if (li.tagName === 'UL' || li.tagName === 'OL') {

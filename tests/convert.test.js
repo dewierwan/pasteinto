@@ -173,6 +173,44 @@ describe('lists', () => {
   });
 });
 
+describe('numbered lists that carry on from an earlier one', () => {
+  const html = '<ol><li>One</li><li>Two</li></ol><h2>More</h2><ol start="3"><li>Three</li><li>Four</li></ol>';
+  it('keep their first number in Email & Slack and Docs', () => {
+    for (const output of ['email', 'rich']) {
+      const out = convertClip({ html, text: '' }, 'rich', output).html;
+      expect(out.match(/<ol[^>]*>/g).map((ol) => /start="3"/.test(ol))).toEqual([false, true]);
+    }
+  });
+  it('keep their numbers in the text outputs and Markdown', () => {
+    expect(convertClip({ html, text: '' }, 'rich', 'plain').text).toBe('1. One\n2. Two\n\nMore\n\n3. Three\n4. Four');
+    expect(md(html)).toBe('1. One\n2. Two\n\n## More\n\n3. Three\n4. Four');
+  });
+  it('from Markdown too', () => {
+    const out = convertClip({ html: '', text: '1. One\n\n## More\n\n14. Fourteen\n15. Fifteen' }, 'markdown', 'email');
+    expect(out.html).toContain('<ol start="14"');
+    expect(out.text).toContain(' 14. Fourteen\n 15. Fifteen');
+  });
+  it('ignore a start of 1 or one that is not a number', () => {
+    for (const start of ['1', 'x']) {
+      expect(convertClip({ html: `<ol start="${start}"><li>One</li></ol>`, text: '' }, 'rich', 'email').html).not.toContain('start=');
+    }
+  });
+});
+
+describe('the text copied beside the HTML', () => {
+  // Slack converts a paste's plain text itself, and ignores the HTML, when a
+  // line starts like Markdown. See hideMarkdownLineStarts in js/convert.js.
+  const html = '<ol><li>First</li><ul><li>Sub</li></ul><li>Second</li></ol><blockquote>Ship small.</blockquote>';
+  it('has a space before lines Slack would read as Markdown', () => {
+    for (const output of ['email', 'rich']) {
+      expect(convertClip({ html, text: '' }, 'rich', output).text).toBe(' 1. First\n    • Sub\n 2. Second\n\n > Ship small.');
+    }
+  });
+  it('is unchanged in the Plain text output', () => {
+    expect(convertClip({ html, text: '' }, 'rich', 'plain').text).toBe('1. First\n    • Sub\n2. Second\n\n> Ship small.');
+  });
+});
+
 describe('links', () => {
   it('basic link', () => {
     expect(md('<a href="https://x.com">x</a>')).toBe('[x](https://x.com)');

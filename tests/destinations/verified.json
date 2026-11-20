@@ -1,15 +1,15 @@
 {
   "_about": "What each output's clipboard became when pasted into real apps. tests/destinations.test.js fails if the payloads below change: re-check the apps (tests/destinations/README.md), then update this file.",
-  "checked": "2026-10-03",
+  "checked": "2026-11-19",
   "sample": "tests/destinations/sample.html",
   "payloads": {
     "rich": {
       "text/html": "<h1>Project plan</h1><div>Intro with <b>bold</b>, <i>italic</i>, <b><i>both</i></b> and a <a href=\"https://example.com/\">link</a>.</div><h2>Bullets</h2><ul style=\"margin-top:0;margin-bottom:0\"><li>One</li><ul style=\"margin-top:0;margin-bottom:0\"><li class=\"ql-indent-1\">One A</li><ul style=\"margin-top:0;margin-bottom:0\"><li class=\"ql-indent-2\">One A i</li></ul></ul><li>Two</li></ul><h2>Steps</h2><ol style=\"margin-top:0;margin-bottom:0\"><li>First</li><li>Second</li><ol style=\"margin-top:0;margin-bottom:0\"><li class=\"ql-indent-1\">Second a</li></ol></ol><h2>Checklist</h2><ul data-checked=\"false\" style=\"margin-top:0;margin-bottom:0;list-style-type:square\"><li><input type=\"checkbox\">Book venue</li><ul data-checked=\"false\" style=\"margin-top:0;margin-bottom:0;list-style-type:square\"><li class=\"ql-indent-1\"><input type=\"checkbox\">Pay deposit</li></ul></ul><ul data-checked=\"true\" style=\"margin-top:0;margin-bottom:0;list-style-type:square\"><li><input type=\"checkbox\" checked=\"\">Draft agenda</li></ul><ul data-checked=\"false\" style=\"margin-top:0;margin-bottom:0;list-style-type:square\"><li><input type=\"checkbox\">Send invites</li></ul><h3>Mixed list</h3><ul data-checked=\"false\" style=\"margin-top:0;margin-bottom:0;list-style-type:square\"><li><input type=\"checkbox\">Task in a mixed list</li></ul><ul style=\"margin-top:0;margin-bottom:0\"><li>Plain note</li></ul><div><br></div><blockquote style=\"margin:0 0 0 0.8ex;border-left:1px solid #ccc;padding-left:1ex\">Ship small.</blockquote>",
-      "text/plain": "Project plan\n\nIntro with bold, italic, both and a link (https://example.com/).\n\nBullets\n\n• One\n    • One A\n        • One A i\n• Two\n\nSteps\n\n1. First\n2. Second\n    1. Second a\n\nChecklist\n\n☐ Book venue\n    ☐ Pay deposit\n☒ Draft agenda\n☐ Send invites\n\nMixed list\n\n☐ Task in a mixed list\n• Plain note\n\n> Ship small."
+      "text/plain": "Project plan\n\nIntro with bold, italic, both and a link (https://example.com/).\n\nBullets\n\n• One\n    • One A\n        • One A i\n• Two\n\nSteps\n\n 1. First\n 2. Second\n    1. Second a\n\nChecklist\n\n☐ Book venue\n    ☐ Pay deposit\n☒ Draft agenda\n☐ Send invites\n\nMixed list\n\n☐ Task in a mixed list\n• Plain note\n\n > Ship small."
     },
     "email": {
       "text/html": "<div><b>Project plan</b></div><div><br></div><div>Intro with <b>bold</b>, <i>italic</i>, <b><i>both</i></b> and a <a href=\"https://example.com/\">link</a>.</div><div><br></div><div><b>Bullets</b></div><div><br></div><ul style=\"margin-top:0;margin-bottom:0\"><li>One</li><ul style=\"margin-top:0;margin-bottom:0\"><li class=\"ql-indent-1\">One A</li><ul style=\"margin-top:0;margin-bottom:0\"><li class=\"ql-indent-2\">One A i</li></ul></ul><li>Two</li></ul><div><br></div><div><b>Steps</b></div><div><br></div><ol style=\"margin-top:0;margin-bottom:0\"><li>First</li><li>Second</li><ol style=\"margin-top:0;margin-bottom:0\"><li class=\"ql-indent-1\">Second a</li></ol></ol><div><br></div><div><b>Checklist</b></div><div><br></div><div>☐ Book venue</div><div>&nbsp;&nbsp;&nbsp;&nbsp;☐ Pay deposit</div><div>☒ Draft agenda</div><div>☐ Send invites</div><div><br></div><div><b>Mixed list</b></div><div><br></div><div>☐ Task in a mixed list</div><ul style=\"margin-top:0;margin-bottom:0\"><li>Plain note</li></ul><div><br></div><blockquote style=\"margin:0 0 0 0.8ex;border-left:1px solid #ccc;padding-left:1ex\">Ship small.</blockquote>",
-      "text/plain": "Project plan\n\nIntro with bold, italic, both and a link (https://example.com/).\n\nBullets\n\n• One\n    • One A\n        • One A i\n• Two\n\nSteps\n\n1. First\n2. Second\n    1. Second a\n\nChecklist\n\n☐ Book venue\n    ☐ Pay deposit\n☒ Draft agenda\n☐ Send invites\n\nMixed list\n\n☐ Task in a mixed list\n• Plain note\n\n> Ship small."
+      "text/plain": "Project plan\n\nIntro with bold, italic, both and a link (https://example.com/).\n\nBullets\n\n• One\n    • One A\n        • One A i\n• Two\n\nSteps\n\n 1. First\n 2. Second\n    1. Second a\n\nChecklist\n\n☐ Book venue\n    ☐ Pay deposit\n☒ Draft agenda\n☐ Send invites\n\nMixed list\n\n☐ Task in a mixed list\n• Plain note\n\n > Ship small."
     }
   },
   "destinations": {
@@ -41,7 +41,9 @@
       "notes": [
         "To-dos need <input type=\"checkbox\"> as the item's first content. A ☐ character or a box image inside the item stays in the to-do (images become image blocks).",
         "Notion builds blocks only when text/plain has the same lines; a one-line text/plain makes it paste everything as inline text.",
-        "Dewi's own cmd+V of a real Airtable checklist through the Docs output also gave real to-dos (3 Oct 2026)."
+        "Dewi's own cmd+V of a real Airtable checklist through the Docs output also gave real to-dos (3 Oct 2026).",
+        "19 Nov 2026: the same blocks with a space before numbered and quoted lines in text/plain (\" 1. First\", \" > Ship small.\").",
+        "Notion ignores <ol start>: a list that carries on from an earlier one restarts at 1."
       ]
     },
     "airtable": {
@@ -72,12 +74,13 @@
       ],
       "notes": [
         "Real checklists come only from <ul data-checked>; checkbox inputs, images and ☐ characters become plain bullets.",
-        "Nesting comes only from class=\"ql-indent-N\" on items whose nested list sits beside, not inside, the parent item; a list inside a nested item lands one level too shallow."
+        "Nesting comes only from class=\"ql-indent-N\" on items whose nested list sits beside, not inside, the parent item; a list inside a nested item lands one level too shallow.",
+        "Not pasted again on 19 Nov 2026: only text/plain changed, the HTML is the same as on 3 Oct, and the scratch record no longer exists."
       ]
     },
     "google-docs": {
       "output": "rich",
-      "how": "live/google-docs.js, read back with the Docs API and by eye",
+      "how": "A real cmd+V (19 Nov 2026), checked by eye; on 3 Oct, live/google-docs.js read back with the Docs API",
       "observed": [
         "Heading 1 | Project plan",
         "Normal | Intro with [bold:bold], [italic:italic], [bold+italic:both] and a [link:link].",
@@ -103,12 +106,13 @@
       ],
       "notes": [
         "Google Docs makes native checklists only from its own private clipboard data. Tried and failed: <input type=\"checkbox\">, role=\"checkbox\" aria-checked (with and without the docs-internal-guid wrapper and Docs' own tick-box image), list-style-type strings, and Docs' private data written by another source.",
-        "So tasks get square bullets, the one marker Docs honours. A ticked item looks like an unticked one."
+        "So tasks get square bullets, the one marker Docs honours. A ticked item looks like an unticked one.",
+        "<ol start> is honoured: a list that carries on keeps its numbers."
       ]
     },
     "slack": {
       "output": "email",
-      "how": "live/quill.js in the message box (no recipient): Slack's own Quill clipboard, nothing inserted",
+      "how": "A real cmd+V in the message box and a sent message (19 Nov 2026). The sample was run through Slack's own paste handler with a paste event, the HTML placed in its clipboard container",
       "observed": [
         "[bold:Project plan]",
         "",
@@ -143,12 +147,15 @@
       ],
       "notes": [
         "Slack ignores list-style-type, so a task item inside a list keeps its bullet: tasks are written as lines instead.",
-        "A list nested inside an item merges the items into one line (\"OneOne AOne A i\")."
+        "A list nested inside an item merges the items into one line (\"OneOne AOne A i\").",
+        "Slack tests text/plain for Markdown before it looks at the HTML. A line starting \"1. \", \"> \", \"- \" or \"* \" (or `code`, **bold**, [text](url) inside a line) makes it convert the text itself and ignore the HTML: bold and links are lost and \"    • One A\" joins the item above. So those lines start with a space in the text beside the HTML.",
+        "Slack's lists always start at 1. If any <ol> has a start other than 1, Slack types every list number in the paste as text (\"3. Three\") and keeps nested bullets as real bullets.",
+        "quill.clipboard.convert(html) skips both rules, so it cannot stand in for a paste."
       ]
     },
     "gmail": {
       "output": "email",
-      "how": "a paste event in a new message's body (left as a draft), read back from the compose DOM",
+      "how": "A real cmd+V in a new message's body (19 Nov 2026, draft discarded), read back from the compose DOM",
       "observed": [
         "[bold:Project plan]",
         "Intro with [bold:bold], [italic:italic], [bold+italic:both] and a [link:link].",
@@ -173,7 +180,8 @@
       ],
       "notes": [
         "Gmail swaps ☑ for a coloured emoji image even with U+FE0E; ☒ stays text.",
-        "Lists nested inside items get uneven spacing in Gmail (gaps of 21, 29, 21 and 46px); nested lists beside their parent item get an even 29px at every level."
+        "Lists nested inside items get uneven spacing in Gmail (gaps of 21, 29, 21 and 46px); nested lists beside their parent item get an even 29px at every level.",
+        "<ol start> is honoured: a list that carries on keeps its numbers."
       ]
     }
   }
